@@ -94,4 +94,76 @@ cat > output/01_project_id.txt
 export PATH="$PATH:$PWD/XXX" //意思是新路径=旧路径+某个文件夹绝对路径（：意思是分隔开的不同段）
 ```
 
+## 关于03任务  9.14
+``` 
+find   //根据文件名找文件  
+grep  //根据文件内容找文件  
+sort  //根据字典顺序或者变形排序  
+uniq  //去除相邻的相同内容  
+``` 
+我最开始用的  
+```
+grep -rlE  "TODO|FIXME" ./workspace/project/ |sort -u >output/03_code_search.txt  
+输出是：  
+[FAIL] 03 Code Search
+./workspace/project/main.py
+./workspace/project/utils/helper.py
+```
+这个无法通过,但是下面这个通过了：   
+```  
+grep -rlE  "TODO|FIXME" workspace/project/ |sort -u >output/03_code_search.txt
+ ./check.sh 03
+[PASS] 03 Code Search    
+cat output/03_code_search.txt
+workspace/project/main.py
+workspace/project/utils/helper.py
+```
+区别就在有没有"./"  
+./的意识是当前目录，如果grep等输出前用了./输出结果也会有  
+## 关于04任务  9.14
+```
+wc 是 word count 的缩写，在 Unix/Linux 系统中用于统计行数、单词数、字节数或字符数。它既能处理文件，也能处理来自标准输入或管道的数据，非常适合日志分析、数据统计等场景。
+
+基本语法：
+
+wc [选项] [文件...]  
+-l //行数  line
+-w  //单词数  word
+-c  //字节数  charactors
+```
+1. 尝试通过grep先找到在哪，再根据wc计算条数最后输出到txt文件  
+``` 
+grep "ERROR"  logs/server.log | wc -l
+7
+grep -c "ERROR"  logs/server.log  
+7  
+```    
+2. 说是去重再按字典序实际上应该先按字典序再去重，因为uniq只去相邻  
+需要用户名，题目中没有，我打算使用cat去文件中找，但ai推荐我用head只找前几行。  
+```   
+2026-08-31 10:00:01 INFO user=alice action=login
+2026-08-31 10:00:05 INFO user=bob action=login
+2026-08-31 10:01:11 ERROR user=bob code=500
+2026-08-31 10:01:35 WARN user=carol code=401
+2026-08-31 10:02:03 ERROR user=alice code=404  
+``` 
+我尝试使用  
+`grep  "ERROR"  logs/server.log| grep -o "user=[^ ]*"|sort |uniq `
+但是输出`user=alice` ,根据一开始的提示我将尝试 `cut`  
+```  
+cut 命令是一个强大的文本处理工具，用于从文件或标准输入中剪切字节、字符和字段，并将结果输出到标准输出。它可以根据指定的分隔符、字节位置或字符位置来剪切文本。
+
+基本语法
+
+cut [选项] [文件]
+复制
+常用选项包括：
+
+-b：按字节剪切。
+
+-c：按字符剪切。
+
+-d：指定分隔符，默认为制表符。
+```
+所以我将试试` cut -d= -f2  //从“=”处分开，取第二部分-d = delimiter，分隔符-f = field，字段（第几段）
 
